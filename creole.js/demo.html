@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>shin1m -&nbsp;creole.js Live Demo</title>
+    <link rel="stylesheet" href="../bootstrap/css/bootstrap.css">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+    <link rel="stylesheet" href="../bootstrap/css/bootstrap-responsive.css">
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container"><a data-toggle="collapse" data-target=".nav-collapse" class="btn btn-navbar"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></a><a href="../index.html" class="brand">shin1m</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li><a href="../http://github.com/shin1m/xemmai">xemmai</a></li>
+              <li><a href="../http://github.com/shin1m/creole.js">creole.js</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="span8">
+          <div id="preview"></div>
+          <textarea id="source" rows="8" class="span8">
+            = creole.js Live Demo
+            
+            creole.js is a [[http://wikicreole.org/wiki/Creole1.0|Creole 1.0]] parser for javascript.
+            
+            It can run on both client side and server side.
+            
+            ----
+            Edit the source below.
+          </textarea>
+        </div>
+        <div class="span4"><img src="http://wikicreole.org/attach/CheatSheet/creole_cheat_sheet.png"></div>
+      </div>
+      <hr>
+      <footer>
+        <p>&copy; 2012 Shin-ichi MORITA</p>
+      </footer>
+    </div>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="../bootstrap/js/bootstrap.js"></script>
+    <script src="creole.js"></script>
+    <script src="html.js"></script>
+    <script>
+      var escapes = {'&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;'};
+      var preview = function() {
+        var result = [];
+        var builder = new html.Builder(function(value) {
+          result.push(value.replace(/[&"<>]/g, function(c) {
+            return escapes[c];
+          }));
+        }, function(value) {
+          result.push(value);
+        });
+        creole.parse(builder, $('#source').val());
+        $('#preview').html(result.join(''));
+      };
+      $('#source').data('preview', null).on('input', function() {
+        clearTimeout($(this).data('preview'));
+        $(this).data('preview', setTimeout(preview, 500));
+      });
+      preview();
+    </script>
+  </body>
+</html>

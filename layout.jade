@@ -1,0 +1,44 @@
+!!! 5
+
+mixin mainMenu(current)
+  - var items = [["http://github.com/shin1m/xemmai", "xemmai"], ["http://github.com/shin1m/creole.js", "creole.js"]];
+  each item in items
+    if current === item[0]
+      li.active: a(href="#{root}#{item[0]}")= item[1]
+    else
+      li: a(href="#{root}#{item[0]}")= item[1]
+
+html
+  head
+    title
+      | shin1m -&nbsp;
+      block title
+    link(rel="stylesheet", href="#{root}bootstrap/css/bootstrap.css")
+    style(type="text/css")
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    link(rel="stylesheet", href="#{root}bootstrap/css/bootstrap-responsive.css")
+  body
+    .navbar.navbar-fixed-top
+      .navbar-inner
+        .container
+          a.btn.btn-navbar(data-toggle="collapse", data-target=".nav-collapse")
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          a.brand(href="#{root}index.html") shin1m
+          .nav-collapse
+            ul.nav
+              block mainMenu
+                mixin mainMenu("")
+    .container
+      .row
+        block content
+      hr
+      footer
+        p &copy; 2012 Shin-ichi MORITA
+    block scripts
+      script(src="http://code.jquery.com/jquery-latest.js")
+      script(src="#{root}bootstrap/js/bootstrap.js")
