@@ -1,5 +1,13 @@
 class Builder
-  constructor: (@e, @u) -> @context = []
+  escapes = {'&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;'}
+  constructor: ->
+    @macros = {}
+    @reset()
+  reset: ->
+    @context = []
+    @result = []
+  e: (value) -> @result.push value.replace(/[&"<>]/g, (c) -> escapes[c])
+  u: (value) -> @result.push value
   bold:
     start: -> @u '<strong>'
     end: -> @u '</strong>'
@@ -82,6 +90,14 @@ class Builder
   inlineNowiki:
     start: -> @u '<tt>'
     end: -> @u '</tt>'
+  macro:
+    start: (options) ->
+      macro = @macros[options.name]
+      if macro?
+        macro @, options.parameters
+      else
+        @e 'Unknown macro: ' + options.name
+    end: ->
   start: (name, options) ->
     handler = @[name]
     if handler?

@@ -11,11 +11,10 @@ render = (path, root) ->
     if stat.isFile() && pattern.test(path)
       target = path.replace pattern, '.html'
       fs.lstat target, (err, stat0) ->
-        throw err if err
-        return unless stat0.mtime < stat.mtime || stat0.mtime < modified
+        return unless err || stat0.mtime < stat.mtime || stat0.mtime < modified
         fs.readFile path, 'utf8', (err, source) ->
           throw err if err
-          output = jade.compile(source, {filename: path, pretty: true}) {root: root}
+          output = jade.compile(source, {filename: path}) {root: root}
           fs.writeFile target, output, (err) ->
             throw err if err
             console.log 'rendered %s', target

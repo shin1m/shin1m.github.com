@@ -1,0 +1,103 @@
+extends ../layout
+
+block title
+  | creole.js Live Demo with Macro
+
+block mainMenu
+  mixin mainMenu("creole.js/demo-macro.html")
+
+block content
+  .span5
+    textarea#source.span5(rows="24").
+      = creole.js Live Demo with Macro
+      
+      <<SayHello To='World'>>
+      
+      <<FlickrPhotos Tags='mount rainier' Limit='2'>>
+      
+      <<TwitterTimeline User='twitterapi' Count='5'>>
+      
+      ----
+      Edit the source on the left side.
+  .span7
+    #preview
+
+append scripts
+  script(src="creole.js")
+  script(src="html.js")
+  script
+    var builder = new html.Builder();
+    builder.macros.SayHello = function(builder, parameters) {
+      if (parameters.To === undefined)
+        builder.e('<<SayHello To=\'...\'>>');
+      else
+        builder.e('Hello, ' + parameters.To + '!');
+    };
+    builder.macros.FlickrPhotos = function(builder, parameters) {
+      if (parameters.Tags === undefined) {
+        builder.u('<div>');
+        builder.e('<<FlickrPhotos Tags=\'...\' [Limit=\'...\']>>');
+        builder.u('</div>');
+      } else {
+        builder.u('<div data-flickr-tags="');
+        builder.e(parameters.Tags);
+        if (parameters.Limit !== undefined) {
+          builder.u('" data-flickr-limit="');
+          builder.e(parameters.Limit);
+        }
+        builder.u('"></div>');
+      }
+    };
+    builder.macros.TwitterTimeline = function(builder, parameters) {
+      if (parameters.User === undefined) {
+        builder.u('<div>');
+        builder.e('<<TwitterTimeline User=\'...\' [Count=\'...\']>>');
+        builder.u('</div>');
+      } else {
+        builder.u('<div data-twitter-user="');
+        builder.e(parameters.User);
+        if (parameters.Count !== undefined) {
+          builder.u('" data-twitter-count="');
+          builder.e(parameters.Count);
+        }
+        builder.u('"></div>');
+      }
+    };
+    var preview = function() {
+      builder.reset();
+      creole.parse(builder, $('#source').val());
+      $('#preview').html(builder.result.join(''));
+      $('#preview div[data-flickr-tags]').each(function() {
+        var self = $(this);
+        $.getJSON('http://api.flickr.com/services/feeds/photos_public.gne?jsoncallback=?', {
+          tags: self.attr('data-flickr-tags'),
+          tagmode: 'any',
+          format: 'json'
+        }, function(data) {
+          var limit = self.attr('data-flickr-limit');
+          if (limit !== undefined) limit = parseInt(limit) - 1;
+          $.each(data.items, function(i, item) {
+            $('<a></a>').attr('href', item.link).append($('<img/>').attr('src', item.media.m).attr('title', item.title)).appendTo(self);
+            if (limit !== undefined && i === limit) return false;
+          });
+        });
+      });
+      $('#preview div[data-twitter-user]').each(function() {
+        var self = $(this);
+        $.getJSON('http://api.twitter.com/1/statuses/user_timeline.json?callback=?', {
+          screen_name: self.attr('data-twitter-user'),
+          count: self.attr('data-twitter-count'),
+          include_rts: true
+        }, function(data) {
+          if (data.length > 0) $('<a></a>').attr('href', 'http://twitter.com/' + data[0].user.screen_name).text(data[0].user.name).appendTo(self);
+          $.each(data, function(i, item) {
+            $('<div></div>').text(item.text).appendTo(self);
+          });
+        });
+      });
+    };
+    $('#source').data('preview', null).on('input', function() {
+      clearTimeout($(this).data('preview'));
+      $(this).data('preview', setTimeout(preview, 500));
+    });
+    preview();

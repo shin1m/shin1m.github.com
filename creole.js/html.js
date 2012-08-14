@@ -3,12 +3,34 @@
   var Builder, exports, _ref;
 
   Builder = (function() {
+    var escapes;
 
-    function Builder(e, u) {
-      this.e = e;
-      this.u = u;
-      this.context = [];
+    escapes = {
+      '&': '&amp;',
+      '"': '&quot;',
+      '<': '&lt;',
+      '>': '&gt;'
+    };
+
+    function Builder() {
+      this.macros = {};
+      this.reset();
     }
+
+    Builder.prototype.reset = function() {
+      this.context = [];
+      return this.result = [];
+    };
+
+    Builder.prototype.e = function(value) {
+      return this.result.push(value.replace(/[&"<>]/g, function(c) {
+        return escapes[c];
+      }));
+    };
+
+    Builder.prototype.u = function(value) {
+      return this.result.push(value);
+    };
 
     Builder.prototype.bold = {
       start: function() {
@@ -220,6 +242,19 @@
       end: function() {
         return this.u('</tt>');
       }
+    };
+
+    Builder.prototype.macro = {
+      start: function(options) {
+        var macro;
+        macro = this.macros[options.name];
+        if (macro != null) {
+          return macro(this, options.parameters);
+        } else {
+          return this.e('Unknown macro: ' + options.name);
+        }
+      },
+      end: function() {}
     };
 
     Builder.prototype.start = function(name, options) {

@@ -7,9 +7,8 @@ block mainMenu
   mixin mainMenu("creole.js/demo.html")
 
 block content
-  .span8
-    #preview
-    textarea#source.span8(rows="8").
+  .span5
+    textarea#source.span5(rows="24").
       = creole.js Live Demo
       
       creole.js is a [[http://wikicreole.org/wiki/Creole1.0|Creole 1.0]] parser for javascript.
@@ -17,26 +16,21 @@ block content
       It can run on both client side and server side.
       
       ----
-      Edit the source below.
-  .span4
-    img(src="http://wikicreole.org/attach/CheatSheet/creole_cheat_sheet.png")
+      Edit the source on the left side.
+      
+      {{http://wikicreole.org/attach/CheatSheet/creole_cheat_sheet.png}}
+  .span7
+    #preview
 
 append scripts
   script(src="creole.js")
   script(src="html.js")
   script
-    var escapes = {'&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;'};
+    var builder = new html.Builder();
     var preview = function() {
-      var result = [];
-      var builder = new html.Builder(function(value) {
-        result.push(value.replace(/[&"<>]/g, function(c) {
-          return escapes[c];
-        }));
-      }, function(value) {
-        result.push(value);
-      });
+      builder.reset();
       creole.parse(builder, $('#source').val());
-      $('#preview').html(result.join(''));
+      $('#preview').html(builder.result.join(''));
     };
     $('#source').data('preview', null).on('input', function() {
       clearTimeout($(this).data('preview'));
